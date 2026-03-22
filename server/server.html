@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background:#0f172a; color:white; font-family:sans-serif; text-align:center; padding:20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .card { background:#1e293b; padding:20px; border-radius:15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        canvas { background: #f8fafc; border-radius: 8px; margin-top: 10px; }
+        input[type=range] { width: 80%; cursor: pointer; }
+        table { width:100%; margin-top: 10px; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #334155; }
+        input, button { padding: 8px; border-radius: 5px; border: none; margin: 5px; }
+        button { background: #3b82f6; color: white; cursor: pointer; }
+        .val { font-size: 1.5rem; font-weight: bold; color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <h2>🌙 Smart Mattress Pro</h2>
+    <div class="card" style="margin-bottom:15px;">
+        Time: <span id="time" class="val">--:--:--</span>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Environment</h3>
+            <p>Temp: <span id="temp" class="val">0</span> °C</p>
+            <p>Humidity: <span id="hum" class="val">0</span> %</p>
+        </div>
+
+        <div class="card">
+            <h3>Sleep Score</h3>
+            <div id="sleep" class="val">100</div>
+            <p>Based on movement</p>
+        </div>
+
+        <div class="card">
+            <h3>Motor Control</h3>
+            <p>Intensity: <span id="pwmVal">0</span></p>
+            <input type="range" min="0" max="255" value="0" id="slider">
+            <br><br>
+            <button onclick="buzz()">Test Vibration</button>
+        </div>
+
+        <div class="card">
+            <h3>New Alarm</h3>
+            <form action="/setAlarm">
+                <input name="name" placeholder="Alarm Label">
+                <input type="number" name="h" placeholder="Hr (0-23)" min="0" max="23" style="width:60px">
+                <input type="number" name="m" placeholder="Min" min="0" max="59" style="width:60px">
+                <button type="submit">Add</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Active Alarms</h3>
+        <table>
+            <thead><tr><th>Name</th><th>Time</th><th>Remaining</th></tr></thead>
+            <tbody id="alarmTable"></tbody>
+        </table>
+    </div>
+
+    <div class="grid">
+        <div class="card"><h3>Temp History</h3><canvas id="tempChart"></canvas></div>
+        <div class="card"><h3>Hum History</h3><canvas id="humChart"></canvas></div>
+    </div>
+
+<script>
+    var ws = new WebSocket('ws://' + location.hostname + ':81/');
+    
+    const config = (label, color) => ({
+        type: 'line',
+        data: { labels: [], datasets: [{ label: label, data: [], borderColor: color, tension: 0.3 }] },
+        options: { animation: false, scales: { y: { beginAtZero: false } } }
+    });
+
+    const tChart = new Chart(document.getElementById('tempChart'), config('Temp', '#ef4444'));
+    const hChart = new Chart(document.getElementById('humChart'), config('Hum', '#3b82f6'));
+
+    ws.onmessage = function(event) {
+        try {
+            var d = JSON.parse(event.data);
+            
+            document.getElementById("time").innerHTML = d.time;
+            document.getElementById("temp").innerHTML = d.temp.toFixed(1);
+            document.getElementById("hum").innerHTML = d.hum.toFixed(1);
+            document.getElementById("sleep").innerHTML = d.sleep.toFixed(1);
+            document.getElementById("pwmVal").innerHTML = d.pwm;
+            
+            // Update Graph
+            const now = new Date().toLocaleTimeString();
+            [tChart, hChart].forEach((c, i) => {
+                c.data.labels.push("");
+                c.data.datasets[0].data.push(i === 0 ? d.temp : d.hum);
+                if(c.data.labels.length > 20) {
+                    c.data.labels.shift();
+                    c.data.datasets[0].data.shift();
+                }
+                c.update();
+            });
+
+            // Update Alarms
+            var t = "";
+            d.alarms.forEach(a => {
+                t += `<tr><td>${a.name}</td><td>${a.time}</td><td>${a.left}</td></tr>`;
+            });
+            document.getElementById("alarmTable").innerHTML = t;
+
+        } catch (e) { console.error("JSON Error", e); }
+    };
+
+    document.getElementById("slider").oninput = function() {
+        document.getElementById("pwmVal").innerHTML = this.value;
+        fetch("/setPWM?value=" + this.value);
+    };
+
+    function buzz() { fetch("/buzz"); }
+</script>
+</body>
+</html>
