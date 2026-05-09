@@ -1,122 +1,122 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { background:#0f172a; color:white; font-family:sans-serif; text-align:center; padding:20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
-        .card { background:#1e293b; padding:20px; border-radius:15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        canvas { background: #f8fafc; border-radius: 8px; margin-top: 10px; }
-        input[type=range] { width: 80%; cursor: pointer; }
-        table { width:100%; margin-top: 10px; border-collapse: collapse; }
-        th, td { padding: 10px; border-bottom: 1px solid #334155; }
-        input, button { padding: 8px; border-radius: 5px; border: none; margin: 5px; }
-        button { background: #3b82f6; color: white; cursor: pointer; }
-        .val { font-size: 1.5rem; font-weight: bold; color: #3b82f6; }
-    </style>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <title>Smart Mattress</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; background: #f0f4f8; margin: 0; padding: 20px; }
+    h2   { color: #2c3e50; }
+    h4   { color: #7f8c8d; margin-top: -10px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin: 12px auto;
+            max-width: 420px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .stat { font-size: 1.3em; margin: 6px 0; }
+    input[type=range] { width: 80%; }
+    input[type=number], input[type=text] { width: 60px; padding: 6px; margin: 4px; border-radius: 6px;
+            border: 1px solid #ccc; text-align: center; }
+    button, input[type=submit] {
+            background: #3498db; color: white; border: none; padding: 10px 22px;
+            border-radius: 8px; font-size: 1em; cursor: pointer; margin: 6px; }
+    button:hover, input[type=submit]:hover { background: #2980b9; }
+    #buzzBtn { background: #e74c3c; }
+    #buzzBtn:hover { background: #c0392b; }
+    table { margin: 0 auto; border-collapse: collapse; }
+    td    { padding: 6px 12px; border-bottom: 1px solid #eee; }
+    a     { color: #e74c3c; text-decoration: none; }
+  </style>
 </head>
 <body>
-    <h2>🌙 Smart Mattress Pro</h2>
-    <div class="card" style="margin-bottom:15px;">
-        Time: <span id="time" class="val">--:--:--</span>
-    </div>
+  <h2>Smart Mattress</h2>
+  <h4>Omar Samy</h4>
 
-    <div class="grid">
-        <div class="card">
-            <h3>Environment</h3>
-            <p>Temp: <span id="temp" class="val">0</span> °C</p>
-            <p>Humidity: <span id="hum" class="val">0</span> %</p>
-        </div>
+  <div class='card'>
+    <div class='stat'>&#128336; <b><span id='time'>--</span></b> &nbsp; <span id='date'>--</span></div>
+    <div class='stat'>&#127777; Temperature: <b><span id='temp'>--</span> &deg;C</b></div>
+    <div class='stat'>&#128167; Humidity: <b><span id='hum'>--</span> %</b></div>
+    <div class='stat'>&#128164; Sleep Score: <b><span id='sleep'>--</span></b></div>
+  </div>
 
-        <div class="card">
-            <h3>Sleep Score</h3>
-            <div id="sleep" class="val">100</div>
-            <p>Based on movement</p>
-        </div>
+  <div class='card'>
+    <h3>Motor Control</h3>
+    <input type='range' min='0' max='255' value='0' id='slider'><br>
+    PWM: <span id='val'>0</span>
+    <br><br>
+    <button id='buzzBtn' onclick='buzz()'>&#9889; Activate Buzz</button>
+  </div>
 
-        <div class="card">
-            <h3>Motor Control</h3>
-            <p>Intensity: <span id="pwmVal">0</span></p>
-            <input type="range" min="0" max="255" value="0" id="slider">
-            <br><br>
-            <button onclick="buzz()">Test Vibration</button>
-        </div>
+  <div class='card'>
+    <h3>Alarms</h3>
+    <table id='alarmTable'>)rawhtml";
 
-        <div class="card">
-            <h3>New Alarm</h3>
-            <form action="/setAlarm">
-                <input name="name" placeholder="Alarm Label">
-                <input type="number" name="h" placeholder="Hr (0-23)" min="0" max="23" style="width:60px">
-                <input type="number" name="m" placeholder="Min" min="0" max="59" style="width:60px">
-                <button type="submit">Add</button>
-            </form>
-        </div>
-    </div>
+  html += alarmRows.length() ? alarmRows : "<tr><td>No alarms set</td></tr>";
 
-    <div class="card">
-        <h3>Active Alarms</h3>
-        <table>
-            <thead><tr><th>Name</th><th>Time</th><th>Remaining</th></tr></thead>
-            <tbody id="alarmTable"></tbody>
-        </table>
-    </div>
+  html += R"rawhtml(
+    </table>
+    <br>
+    <b>Add Alarm</b><br>
+    Hour   <input type='number' id='ah' min='0' max='23' placeholder='HH'>
+    Minute <input type='number' id='am' min='0' max='59' placeholder='MM'>
+    <br>
+    <button onclick="addAlarm()">Add</button>
+  </div>
 
-    <div class="grid">
-        <div class="card"><h3>Temp History</h3><canvas id="tempChart"></canvas></div>
-        <div class="card"><h3>Hum History</h3><canvas id="humChart"></canvas></div>
-    </div>
+  <div class='card'>
+    <h3>Set RTC Time</h3>
+    Hour   <input type='number' id='th' min='0' max='23' placeholder='HH'>
+    Minute <input type='number' id='tm' min='0' max='59' placeholder='MM'>
+    Second <input type='number' id='ts' min='0' max='59' placeholder='SS'>
+    <br>
+    <button onclick="setTime()">Set Time</button>
+  </div>
 
-<script>
-    var ws = new WebSocket('ws://' + location.hostname + ':81/');
-    
-    const config = (label, color) => ({
-        type: 'line',
-        data: { labels: [], datasets: [{ label: label, data: [], borderColor: color, tension: 0.3 }] },
-        options: { animation: false, scales: { y: { beginAtZero: false } } }
-    });
-
-    const tChart = new Chart(document.getElementById('tempChart'), config('Temp', '#ef4444'));
-    const hChart = new Chart(document.getElementById('humChart'), config('Hum', '#3b82f6'));
-
-    ws.onmessage = function(event) {
-        try {
-            var d = JSON.parse(event.data);
-            
-            document.getElementById("time").innerHTML = d.time;
-            document.getElementById("temp").innerHTML = d.temp.toFixed(1);
-            document.getElementById("hum").innerHTML = d.hum.toFixed(1);
-            document.getElementById("sleep").innerHTML = d.sleep.toFixed(1);
-            document.getElementById("pwmVal").innerHTML = d.pwm;
-            
-            // Update Graph
-            const now = new Date().toLocaleTimeString();
-            [tChart, hChart].forEach((c, i) => {
-                c.data.labels.push("");
-                c.data.datasets[0].data.push(i === 0 ? d.temp : d.hum);
-                if(c.data.labels.length > 20) {
-                    c.data.labels.shift();
-                    c.data.datasets[0].data.shift();
-                }
-                c.update();
-            });
-
-            // Update Alarms
-            var t = "";
-            d.alarms.forEach(a => {
-                t += `<tr><td>${a.name}</td><td>${a.time}</td><td>${a.left}</td></tr>`;
-            });
-            document.getElementById("alarmTable").innerHTML = t;
-
-        } catch (e) { console.error("JSON Error", e); }
+  <script>
+    // Slider
+    var slider = document.getElementById('slider');
+    var valSpan = document.getElementById('val');
+    slider.oninput = function() {
+      valSpan.innerHTML = this.value;
+      fetch('/setPWM?value=' + this.value);
     };
 
-    document.getElementById("slider").oninput = function() {
-        document.getElementById("pwmVal").innerHTML = this.value;
-        fetch("/setPWM?value=" + this.value);
-    };
+    // Buzz button
+    function buzz() {
+      fetch('/buzz').then(r => r.text()).then(() => {
+        var btn = document.getElementById('buzzBtn');
+        btn.textContent = 'Buzzing...';
+        btn.disabled = true;
+        setTimeout(() => { btn.textContent = '\u26A1 Activate Buzz'; btn.disabled = false; }, 2200);
+      });
+    }
 
-    function buzz() { fetch("/buzz"); }
-</script>
+    // Add alarm via fetch (no page reload)
+    function addAlarm() {
+      var h = document.getElementById('ah').value;
+      var m = document.getElementById('am').value;
+      if (h === '' || m === '') { alert('Enter hour and minute'); return; }
+      fetch('/addAlarm?h=' + h + '&m=' + m).then(() => location.reload());
+    }
+
+    // Set RTC time via fetch
+    function setTime() {
+      var h = document.getElementById('th').value;
+      var m = document.getElementById('tm').value;
+      var s = document.getElementById('ts').value;
+      fetch('/setTime?h=' + h + '&m=' + m + '&s=' + (s||0)).then(() => alert('Time set!'));
+    }
+
+    // Live sensor update every second
+    setInterval(function() {
+      fetch('/data')
+        .then(r => r.json())
+        .then(d => {
+          document.getElementById('time').innerHTML  = d.time;
+          document.getElementById('date').innerHTML  = d.date;
+          document.getElementById('temp').innerHTML  = d.temp;
+          document.getElementById('hum').innerHTML   = d.hum;
+          document.getElementById('sleep').innerHTML = d.sleep;
+        })
+        .catch(() => {}); // silently ignore if ESP is busy during buzz
+    }, 1000);
+  </script>
 </body>
 </html>
