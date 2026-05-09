@@ -4,12 +4,12 @@
 #include <Wire.h>
 #include <RTClib.h>
 
-#define DHTPIN 15
+#define DHTPIN 2
 #define DHTTYPE DHT22
-#define MOTOR_PIN_1 23
-#define MOTOR_PIN_2 25
-#define MOTOR_PIN_3 18
-#define MOTOR_PIN_4 32
+#define MOTOR_PIN_1 32
+#define MOTOR_PIN_2 21
+#define MOTOR_PIN_3 4
+#define MOTOR_PIN_4 13
 #define MAX_ALARMS 5
 
 void handleRoot();
@@ -47,7 +47,7 @@ unsigned long lastScoreUpdate = 0;
 /* ── buzz pattern (non-blocking would be ideal but kept simple) ── */
 void runBuzzPattern() {
   // 6 pulses: pins 1&3 on, then 2&4 on
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 20; i++) {
     ledcWrite(MOTOR_PIN_1, 200); ledcWrite(MOTOR_PIN_3, 200);
     ledcWrite(MOTOR_PIN_2, 0);   ledcWrite(MOTOR_PIN_4, 0);
     delay(200);
@@ -63,7 +63,7 @@ void runBuzzPattern() {
 void setup() {
   Serial.begin(115200);
   dht.begin();
-  Wire.begin(21, 22);
+  Wire.begin(17, 5);
 
   if (!rtc.begin()) {
     Serial.println("RTC not found");
